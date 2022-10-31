@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="query">
+	<!-- 
+	$ : 필드명, 테이블명
+	# : 값  abc='hong' 외따옴표가 들어감..
+	 -->
+	<select id="searchview" resultType="boardvo">
+	<!-- mssql 
+	select * from project_board where subject like '%'+#{keyword}+'%' order by boardnumber
+	 -->
+	select * from project_board where ${searchtype} like concat('%',#{keyword},'%') 
+	order by boardnumber
+	</select>
+	
+	<!-- 글쓴이로 검색시 사용되는 부분 -->
+	<select id="searchview2" resultType="boardvo">
+	select * from project_board where ${searchtype} like concat(#{keyword},'%') 
+	order by boardnumber
+	</select>
+	
+	<!-- 전체페이지 출력 -->
+	<select id="select" resultType="boardvo">
+	select * from project_board order by boardnumber desc limit ${pageing},${pagelimit}
+	</select>
+	
+	<select id="selectview" resultType="boardvo">
+	select * from project_board where boardnumber=#{boardnumber}
+	</select>
+	
+	<!-- 조회수 -->
+	<update id="updateview">
+	update project_board as a join 
+	(select max(hit)+1 as maxhit from project_board where boardnumber=#{boardnumber}) as b 
+	set a.hit=b.maxhit where a.boardnumber=#{boardnumber};
+	</update>
+		
+	<insert id="create">
+    insert into project_board(boardnumber, name, subject, pwd, content, hit)
+  	values('0', #{name}, #{subject}, #{pwd}, #{content}, #{hit})
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="modify">
+	update project_board set subject=#{subject}, content=#{content} where boardnumber=#{boardnumber}
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="del">
+	delete from project_board where boardnumber=#{boardnumber}  
+	and pwd=#{pwd}
+	</delete>
+	
+	<!-- 페이지 번호 (한페이지당 2개씩) select는 resulttype필수
+	한페이지당  몇개씩 보여줄 것인지 sql 문법에서 계산해서 가져옴-->
+	<select id="pages" resultType="int">
+	select ceil(count(*)/#{pagelimit}) from project_board
+	</select>
+	
+	<!-- select count(*) from project_board -->
+	
+</mapper>
